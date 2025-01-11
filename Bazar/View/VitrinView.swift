@@ -58,6 +58,4 @@ struct VitrinView: View {
     }
 }
 
-#Preview {
-    VitrinView()
-}
+
