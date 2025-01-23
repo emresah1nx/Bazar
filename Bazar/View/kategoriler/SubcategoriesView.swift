@@ -12,15 +12,21 @@ struct SubcategoriesView: View {
     @StateObject private var viewModel = kategoriViewModel()
 
     var body: some View {
+        NavigationView {
         List(viewModel.subcategories) { subcategory in
-            Text(subcategory.name)
+            NavigationLink(destination: DetailsView(category: category, subcategory: subcategory)) {
+                Text(subcategory.name)
+            }
         }
-        .navigationTitle(category.name)
         .onAppear {
             if let categoryId = category.id {
                 viewModel.fetchSubcategories(for: categoryId)
             }
         }
+        .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
+        .background(Color.anaRenk2) // Arka plan rengini belirler
+    }
     }
 }
+
 

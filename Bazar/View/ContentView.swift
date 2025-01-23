@@ -33,11 +33,11 @@ struct ContentView: View {
        }
        
        func renkdeğiştir(itemAppearance:UITabBarItemAppearance) {
-           itemAppearance.selected.iconColor = UIColor(named: "yazıRenk1")
-           itemAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor(named: "yazıRenk1")!,.font: UIFont.boldSystemFont(ofSize: 16)]
+           itemAppearance.selected.iconColor = UIColor(named: "yazıRenk2")
+           itemAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor(named: "yazıRenk2")!,.font: UIFont.boldSystemFont(ofSize: 16)]
            
-           itemAppearance.normal.iconColor = UIColor(named: "yazıRenk2")
-           itemAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(named: "yazıRenk2")!, .font: UIFont.systemFont(ofSize: 14)]
+           itemAppearance.normal.iconColor = UIColor(named: "yazıRenk1")
+           itemAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(named: "yazıRenk1")!, .font: UIFont.systemFont(ofSize: 14)]
        }
     
     

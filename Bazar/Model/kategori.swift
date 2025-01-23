@@ -9,11 +9,16 @@ import Foundation
 import FirebaseFirestore
 
 struct kategori: Identifiable, Codable {
-    @DocumentID var id: String? // Ana kategorinin ID'si
+    @DocumentID var id: String?
     var name: String
 }
 
 struct Subcategory: Identifiable, Codable {
-    @DocumentID var id: String? // Alt kategorinin ID'si
+    @DocumentID var id: String?
     var name: String
+}
+
+struct Detail: Identifiable, Codable {
+    @DocumentID var id: String?
+    var name: String  // `description` yerine `name` olacak
 }

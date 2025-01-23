@@ -11,14 +11,31 @@ import FirebaseFirestore
 
 @main
 struct BazarApp: App {
+    @State private var showSplash = true
     init() {
            FirebaseApp.configure()
        }
     var body: some Scene {
         WindowGroup {
-            ContentView()
-            .environmentObject(AuthViewModel())
-        }
+                    ZStack {
+                        // Arka planda ContentView çalışacak
+                        ContentView()
+                            .environmentObject(AuthViewModel())
+                        // Splash Screen, 3 saniye boyunca görünür olacak
+                        if showSplash {
+                            SplashScreenView()
+                                .transition(.opacity) // Opaklık geçişi ile kapanacak
+                        }
+                    }
+                    .onAppear {
+                        // Splash screen'i 3 saniye boyunca göster
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            withAnimation {
+                                showSplash = false // Splash ekranını kaldır
+                            }
+                        }
+                    }
+                }
     }
 }
 

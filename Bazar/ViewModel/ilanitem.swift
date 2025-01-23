@@ -9,7 +9,8 @@ import SwiftUI
 import FirebaseFirestore
 
 class ilanItem: ObservableObject {
-    @Published var ads: [ilanlar] = []
+    @Published var ads: [ilanlar] = []           // Tüm ilanlar
+    @Published var filteredAds: [ilanlar] = []  // Filtrelenmiş ilanlar
 
     private var db = Firestore.firestore()
 
@@ -34,15 +35,25 @@ class ilanItem: ObservableObject {
                       let price = data["price"] as? Double,
                       let createdAt = data["createdAt"] as? Timestamp,
                       let description = data["description"] as? String else { return nil }
-                      
 
                 return ilanlar(id: doc.documentID, imageUrl: imageUrl, userId: userId, title: title, price: price, createdAt: createdAt, description: description)
             }
 
             DispatchQueue.main.async {
                 self?.ads = fetchedAds.shuffled() // Rastgele sırala
+                self?.filteredAds = fetchedAds  // Varsayılan olarak tüm ilanları göster
                 print("Veriler başarıyla yüklendi: \(self?.ads ?? [])")
             }
+        }
+    }
+
+    func searchAds(query: String) {
+        if query.isEmpty {
+            // Arama metni boşsa tüm ilanları göster
+            self.filteredAds = ads
+        } else {
+            // Arama metnine göre ilanları filtrele
+            self.filteredAds = ads.filter { $0.title.lowercased().contains(query.lowercased()) }
         }
     }
 }

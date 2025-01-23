@@ -66,7 +66,7 @@ struct DetayView: View {
                             )
                     Spacer()
                     Text(ad.description)
-                        .font(.caption)
+                        .font(.title)
                         .fontWeight(.semibold)
                         .padding(.horizontal)
                         .background(

@@ -15,15 +15,14 @@ struct KategorilerView: View {
             List(viewModel.categories) { category in
                 NavigationLink(destination: SubcategoriesView(category: category)) {
                     Text(category.name)
-                   }
-                 }
+                }
+            }
             .onAppear {
                 viewModel.fetchCategories()
-            }
         }
-    }
+            .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
+            .background(Color.anaRenk2) // Arka plan rengini belirler
+      }
+   }
 }
 
-#Preview {
-    KategorilerView()
-}
