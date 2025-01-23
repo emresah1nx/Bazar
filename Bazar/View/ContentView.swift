@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     init() {
         
         let appearance = UITabBarAppearance()
@@ -50,20 +51,23 @@ struct ContentView: View {
                 KategorilerView().tabItem {
                     Label("Kategoriler", systemImage: "list.bullet")
                 }
-                ProfileView().tabItem {
+                ProfileTab().tabItem {
                     Label("Profil", systemImage: "person.fill")
                 }
             }
+            .onAppear {
+                        authViewModel.checkAuthState()
+                    }
             .navigationTitle("Bazar").toolbarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItemGroup(placement: .topBarTrailing) {
-                        NavigationLink(destination: MessajlarView()) {
+                        NavigationLink(destination: MesajTab()) {
                             Image(systemName: "message.fill")
                                 .foregroundColor(.yazıRenk1)
                  }
               }
                     ToolbarItem(placement: .topBarLeading) {
-                        NavigationLink(destination:ilanBilgiGirisi()) {
+                        NavigationLink(destination:IlanTab()) {
                             Image(systemName: "plus.circle.fill")
                                 .foregroundColor(.yazıRenk1)
                         }
@@ -73,6 +77,3 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
-}

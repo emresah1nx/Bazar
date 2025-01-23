@@ -8,8 +8,19 @@
 import SwiftUI
 
 struct KategorilerView: View {
+    @StateObject private var viewModel = kategoriViewModel()
+
     var body: some View {
-        Text("Kategoriler")
+        NavigationView {
+            List(viewModel.categories) { category in
+                NavigationLink(destination: SubcategoriesView(category: category)) {
+                    Text(category.name)
+                   }
+                 }
+            .onAppear {
+                viewModel.fetchCategories()
+            }
+        }
     }
 }
 

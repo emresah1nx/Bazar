@@ -6,21 +6,36 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
-class ilanlar : Identifiable {
-    var id:Int?
-    var ad:String?
-    var resim:String?
-    var fiyat:Int?
+struct ilanlar: Identifiable, Codable {
+    var id: String // Firestore doküman ID
+    var imageUrl: [String]
+    var userId: String
+    var title: String
+    var price: Double
+    var createdAt: Date?
+    var description: String
     
-    init() {
-        
-    }
-    
-    init(id: Int, ad: String, resim: String, fiyat: Int) {
-        self.id = id
-        self.ad = ad
-        self.resim = resim
-        self.fiyat = fiyat
-    }
+    enum CodingKeys: String, CodingKey {
+         case id
+         case imageUrl
+         case userId
+         case title
+         case price
+         case createdAt
+         case description
+     }
+
+     // Kodlama sırasında FIRTimestamp'ı Date'e dönüştürme
+    init(id: String, imageUrl: [String], userId: String, title: String, price: Double, createdAt: Timestamp , description: String) {
+         self.id = id
+         self.imageUrl = imageUrl
+         self.userId = userId
+         self.title = title
+         self.price = price
+         self.description = description
+         self.createdAt = createdAt.dateValue() // FIRTimestamp'ı Date'e dönüştürme
+     }
 }
+

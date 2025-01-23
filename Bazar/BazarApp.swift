@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Firebase
+import FirebaseFirestore
 
 @main
 struct BazarApp: App {
@@ -16,6 +17,15 @@ struct BazarApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+            .environmentObject(AuthViewModel())
         }
+    }
+}
+
+struct MainContentView: View {
+    @StateObject private var authViewModel = AuthViewModel()
+
+    var body: some View {
+        ProfileTab()
     }
 }

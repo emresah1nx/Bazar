@@ -8,52 +8,63 @@
 import SwiftUI
 
 struct VitrinView: View {
-    @State private var ilanlistesi = [ilanlar]()
-    
-    
-    
+    @StateObject private var viewModel = ilanItem()
+
     var body: some View {
         GeometryReader { geo in
             let ekranGenişlik = geo.size.width
-            let itemGenişlik = (ekranGenişlik-40)/2
-            
-            NavigationStack {
+            let ekranYükseklik = geo.size.height
+            let itemGenişlik = (ekranGenişlik - 70)/2
+            let itemYükseklik = (ekranYükseklik - 70)/4
+            NavigationView {
                 ScrollView {
-                    LazyVGrid(columns:
-                                [GridItem(.flexible()),GridItem(.flexible())], spacing: 20) {
-                        ForEach(ilanlistesi) { ilans in
-                            NavigationLink(destination: DetayView(ilan: ilans)) {
-                                ilanitem(ilan: ilans, genişlik: itemGenişlik)
-                                    .background(Color.white) // Arka plan rengi
-                                    .cornerRadius(10) // Köşe yuvarlama
-                                    .shadow(radius: 5) // Gölge eklemek (isteğe bağlı)
+                    LazyVGrid(columns: [GridItem(.flexible()),GridItem(.flexible())]) {
+                        ForEach(viewModel.ads) { ads in
+                            NavigationLink(destination: DetayView(ad: ads)) {
+                                VStack {
+                                    if let firstPhoto = ads.imageUrl.first, let url = URL(string: firstPhoto) {
+                                        AsyncImage(url: url) { phase in
+                                            switch phase {
+                                            case .success(let image):
+                                                image.resizable().scaledToFill().frame(width: itemGenişlik, height: itemYükseklik)
+                                            default:
+                                                ProgressView()
+                                            }
+                                        }
+                                        .cornerRadius(10) // Köşe yuvarlama
+                                        .shadow(radius: 5) // Gölge eklemek (isteğe bağlı)
+                                        .clipped()
+                                    }
+                                    Text(ads.title)
+                                        .font(.headline)
+                                        .lineLimit(1)
+                                        .foregroundColor(.yazıRenk3)
+                                        .padding([.leading, .trailing], 0)  // Padding'i hizalamak için
+                                        .frame(maxWidth: .infinity) // Genişliği sınırsız yaparak hizalamayı sağla
+                                    
+                                    Text("₺\(ads.price, specifier: "%.2f")")
+                                        .font(.subheadline)
+                                        .foregroundColor(.yazıRenk3)
+                                        .padding([.leading, .trailing], 0)  // Padding'i hizalamak için
+                                        .frame(maxWidth: .infinity) // Genişliği sınırsız yaparak hizalamayı sağla
+                                }
+                                .padding(5)
+                                .background(Color.yazıRenk1)
+                                .cornerRadius(10)
+                                .shadow(radius: 5)
+                                .frame(width: 150)  // Aynı boyutta görünmesini sağla
                             }
-                            
                         }
                     }
+                    .padding()
                 }
-                .padding(10)
-                .onAppear{
-                    var vitrin = [ilanlar]()
-                    
-                    let a1 = ilanlar(id: 1, ad: "araç 1", resim: "araba1", fiyat: 5990)
-                    let a2 = ilanlar(id: 2, ad: "araç 2", resim: "araba2", fiyat: 4999)
-                    let a3 = ilanlar(id: 3, ad: "araç 3", resim: "araba3", fiyat: 3500)
-                    let a4 = ilanlar(id: 4, ad: "araç 4", resim: "araba4", fiyat: 6000)
-                    let a5 = ilanlar(id: 5, ad: "araç 5", resim: "araba5", fiyat: 2500)
-                    let a6 = ilanlar(id: 6, ad: "araç 6", resim: "araba6", fiyat: 4650)
-                    let a7 = ilanlar(id: 7, ad: "araç 7", resim: "araba7", fiyat: 5350)
-                    vitrin.append(a1)
-                    vitrin.append(a2)
-                    vitrin.append(a3)
-                    vitrin.append(a4)
-                    vitrin.append(a5)
-                    vitrin.append(a6)
-                    vitrin.append(a7)
-                    
-                    ilanlistesi = vitrin
-                }
-            }.background(Color.anaRenk2)
+                .background(Color.anaRenk2)
+            }
+        }
+        .padding(0)
+        .onAppear {
+            viewModel.fetchAds()
+            print("Veriler: \(viewModel.ads)")
         }
     }
 }
