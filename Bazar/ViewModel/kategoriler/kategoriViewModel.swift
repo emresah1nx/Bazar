@@ -19,20 +19,4 @@ class kategoriViewModel: ObservableObject {
             } ?? []
         }
     }
-
-    // Alt kategorileri çek
-    func fetchSubcategories(for categoryId: String) {
-        db.collection("categories")
-            .document(categoryId)
-            .collection("subcategories")
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    print("Error fetching subcategories: \(error)")
-                    return
-                }
-                self.subcategories = snapshot?.documents.compactMap { doc in
-                    try? doc.data(as: Subcategory.self)
-                } ?? []
-            }
-    }
 }

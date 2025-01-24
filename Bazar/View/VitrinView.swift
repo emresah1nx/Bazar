@@ -25,18 +25,19 @@ struct VitrinView: View {
                         // Arama Çubuğu
                         Spacer()
                         HStack {
-                            TextField("Ara...", text: $searchText)
+                            TextField("", text: $searchText, prompt : Text("Ara...").foregroundColor(Color.yazıRenk1))
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .padding(.leading, 10)
                                 .background(Color.anaRenk1)
+                                
                             Button(action: {
                                 viewModel.searchAds(query: searchText)
                             }) {
                                 Text(Image(systemName: "magnifyingglass.circle"))
-                                    .foregroundColor(.yazıRenk1)
+                                    .foregroundColor(.white)
                                     .padding(.vertical,5)
                                     .padding(.horizontal,10)
-                                    .background(Color.white)
+                                    .background(Color.yazıRenk1)
                                     .cornerRadius(10)
                             }
                             .foregroundColor(.yazıRenk3)

@@ -12,6 +12,7 @@ import FirebaseFirestore
 @main
 struct BazarApp: App {
     @State private var showSplash = true
+    @StateObject var authViewModel = AuthViewModel()
     init() {
            FirebaseApp.configure()
        }
@@ -20,7 +21,7 @@ struct BazarApp: App {
                     ZStack {
                         // Arka planda ContentView çalışacak
                         ContentView()
-                            .environmentObject(AuthViewModel())
+                            .environmentObject(authViewModel)
                         // Splash Screen, 3 saniye boyunca görünür olacak
                         if showSplash {
                             SplashScreenView()

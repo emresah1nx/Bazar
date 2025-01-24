@@ -9,24 +9,26 @@ import SwiftUI
 
 struct SubcategoriesView: View {
     var category: kategori
-    @StateObject private var viewModel = kategoriViewModel()
+    @StateObject private var viewModel = SubcategoryViewModel()
 
     var body: some View {
-        NavigationView {
-        List(viewModel.subcategories) { subcategory in
-            NavigationLink(destination: DetailsView(category: category, subcategory: subcategory)) {
-                Text(subcategory.name)
+        VStack {
+            NavigationView {
+                List(viewModel.subcategories) { subcategory in
+                    NavigationLink(destination: DetailsView(category: category, subcategory: subcategory)) {
+                        Text(subcategory.name)
+                    }
+                }
+                .onAppear {
+                    // Alt kategorileri çek
+                    if let categoryId = category.id {
+                        viewModel.fetchSubcategories(for: categoryId)
+                    }
+                }
+                .background(Color.anaRenk2) // Arka plan rengini belirler
+                .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
             }
         }
-        .onAppear {
-            if let categoryId = category.id {
-                viewModel.fetchSubcategories(for: categoryId)
-            }
-        }
-        .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
-        .background(Color.anaRenk2) // Arka plan rengini belirler
-    }
+        .navigationTitle(category.name)
     }
 }
-
-

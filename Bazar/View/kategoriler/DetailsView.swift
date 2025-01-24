@@ -17,24 +17,11 @@ struct DetailsView: View {
 
     var body: some View {
         VStack {
-            // Yükleniyor göstergesi
-            if isLoading {
-                ProgressView("Yükleniyor...")
-                    .progressViewStyle(CircularProgressViewStyle())
-                    .padding()
-            } else {
-                // Eğer detaylar varsa listele
-                if viewModel.details.isEmpty {
-                    Text("Bu alt kategoriye ait detay bulunmamaktadır.")
-                        .foregroundColor(.gray)
-                        .italic()
-                } else {
                     // Detayları listele
                     List(viewModel.details) { detail in
                         Text(detail.name)  // `name` özelliğini listele
                     }
-                }
-            }
+            
         }
         .navigationTitle(subcategory.name)
         .onAppear {

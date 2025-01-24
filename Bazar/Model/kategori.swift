@@ -11,6 +11,7 @@ import FirebaseFirestore
 struct kategori: Identifiable, Codable {
     @DocumentID var id: String?
     var name: String
+    var subcategories: [Subcategory]? = nil
 }
 
 struct Subcategory: Identifiable, Codable {
@@ -22,3 +23,4 @@ struct Detail: Identifiable, Codable {
     @DocumentID var id: String?
     var name: String  // `description` yerine `name` olacak
 }
+
