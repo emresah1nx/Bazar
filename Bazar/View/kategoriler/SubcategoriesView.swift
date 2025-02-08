@@ -1,34 +1,58 @@
-//
-//  SubcategoriesView.swift
-//  Bazar
-//
-//  Created by Emre Şahin on 20.01.2025.
-//
-
 import SwiftUI
 
 struct SubcategoriesView: View {
     var category: kategori
     @StateObject private var viewModel = SubcategoryViewModel()
+    @State private var selectedSubcategory: String? = nil
+    @State private var navigateToSearchView = false
 
     var body: some View {
-        VStack {
-            NavigationView {
-                List(viewModel.subcategories) { subcategory in
+        NavigationStack {
+            List(viewModel.subcategories) { subcategory in
+                HStack {
+                    // Alt kategori adına tıklanınca DetailsView açılır
                     NavigationLink(destination: DetailsView(category: category, subcategory: subcategory)) {
                         Text(subcategory.name)
+                            .padding()
                     }
-                }
-                .onAppear {
-                    // Alt kategorileri çek
-                    if let categoryId = category.id {
-                        viewModel.fetchSubcategories(for: categoryId)
+                    Spacer()
+
+                    // "Tümünü Göster" Butonu (Sadece Butona Basınca Çalışacak)
+                    Button(action: {
+                        selectedSubcategory = subcategory.name
+                        navigateToSearchView = true
+                    }) {
+                        Text("Tümünü Göster")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                            .padding(6)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.blue, lineWidth: 1)
+                            )
                     }
+                    .buttonStyle(PlainButtonStyle()) // Buton tasarımını korumak için
                 }
-                .background(Color.anaRenk2) // Arka plan rengini belirler
-                .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
             }
+            .onAppear {
+                if let categoryId = category.id {
+                    viewModel.fetchSubcategories(for: categoryId)
+                }
+            }
+            .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
+            .background(Color.anaRenk2) // Arka plan rengini belirler
+            .navigationTitle(category.name)
+
+            // Butona basınca yönlendirme yapacak NavigationLink
+            .background(
+                NavigationLink(
+                    destination: KategoriSearchSubView(subcategoryName: selectedSubcategory ?? ""),
+                    isActive: $navigateToSearchView
+                ) {
+                    EmptyView()
+                }
+                .hidden()
+            )
         }
-        .navigationTitle(category.name)
     }
 }

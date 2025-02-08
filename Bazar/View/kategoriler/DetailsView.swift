@@ -17,11 +17,20 @@ struct DetailsView: View {
 
     var body: some View {
         VStack {
-                    // Detayları listele
-                    List(viewModel.details) { detail in
+            // Detayları listele
+            List(viewModel.details) { detail in
+                NavigationLink(destination: KategoriSearchView(detailName: detail.name)) {
+                    HStack {
                         Text(detail.name)  // `name` özelliğini listele
+                            .padding()
+                        Spacer()
+                     //   Image(systemName: "chevron.right") // Sağda yönlendirme oku
                     }
-            
+                    .contentShape(Rectangle()) // Tıklanabilir alanı genişletir
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.anaRenk2) // Arka plan rengini belirler
         }
         .navigationTitle(subcategory.name)
         .onAppear {
@@ -32,9 +41,6 @@ struct DetailsView: View {
                 }
             }
         }
-        .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
-        .background(Color.anaRenk2) // Arka plan rengini belirler
+        .scrollContentBackground(.hidden)
     }
 }
-
-

@@ -16,6 +16,9 @@ struct ilanlar: Identifiable, Codable {
     var price: Double
     var createdAt: Date?
     var description: String
+    var altcategory: String
+    var tempCategory: String
+    var moreCategory: String
     
     enum CodingKeys: String, CodingKey {
          case id
@@ -25,16 +28,22 @@ struct ilanlar: Identifiable, Codable {
          case price
          case createdAt
          case description
+         case altcategory
+         case tempCategory
+         case moreCategory
      }
 
      // Kodlama sırasında FIRTimestamp'ı Date'e dönüştürme
-    init(id: String, imageUrl: [String], userId: String, title: String, price: Double, createdAt: Timestamp , description: String) {
+    init(id: String, imageUrl: [String], userId: String, title: String, price: Double, createdAt: Timestamp , description: String,altcategory: String,tempCategory: String,moreCategory: String) {
          self.id = id
          self.imageUrl = imageUrl
          self.userId = userId
          self.title = title
          self.price = price
          self.description = description
+         self.altcategory = altcategory
+         self.tempCategory = tempCategory
+         self.moreCategory = moreCategory
          self.createdAt = createdAt.dateValue() // FIRTimestamp'ı Date'e dönüştürme
      }
 }

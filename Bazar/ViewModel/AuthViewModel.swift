@@ -10,14 +10,14 @@ import SwiftUI
 import FirebaseAuth
 
 class AuthViewModel: ObservableObject {
-    @Published var isSignedIn: Bool = false
+    @Published var isSignedIn: Bool = Auth.auth().currentUser != nil {
+        didSet {
+            objectWillChange.send() // SwiftUI güncellemesini zorla
+        }
+    }
 
     func checkAuthState() {
-        if Auth.auth().currentUser != nil {
-            isSignedIn = true
-        } else {
-            isSignedIn = false
-        }
+        isSignedIn = Auth.auth().currentUser != nil
     }
 
     func signOut() {

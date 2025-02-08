@@ -1,7 +1,7 @@
 import SwiftUI
 import FirebaseFirestore
 
-class kategoriViewModel: ObservableObject {
+class kategorilerViewModel: ObservableObject {
     @Published var categories: [kategori] = [] // Ana kategoriler
     @Published var subcategories: [Subcategory] = [] // Alt kategoriler
 
