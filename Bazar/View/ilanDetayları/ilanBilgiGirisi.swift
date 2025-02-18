@@ -320,7 +320,7 @@ struct ilanBilgiGirisi: View {
             "uid": uid,
             "tempCategory": categoryId,
             "altcategory": subCategoryId,
-            "morecategory": selectedDetailId,
+            "marka": selectedDetailId,
             "createdAt": Timestamp()
         ]
 

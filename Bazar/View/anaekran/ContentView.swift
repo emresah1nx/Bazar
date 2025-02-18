@@ -57,7 +57,7 @@ struct ContentView: View {
         // **Navigation Bar Şeffaflık Ayarları**
         let navBarAppearance = UINavigationBarAppearance()
         navBarAppearance.configureWithTransparentBackground()
-        navBarAppearance.backgroundColor = UIColor(named: "anaRenk1")?.withAlphaComponent(1) // Hafif şeffaflık
+        navBarAppearance.backgroundColor = UIColor(named: "anaRenk1")?.withAlphaComponent(0) // Hafif şeffaflık
         navBarAppearance.shadowColor = .clear
         navBarAppearance.titleTextAttributes = [
             .foregroundColor: UIColor(named: "yazıRenk1")!,

@@ -18,6 +18,7 @@ struct BazarApp: App {
        }
     var body: some Scene {
         WindowGroup {
+            
                     ZStack {
                         // Arka planda ContentView çalışacak
                         ContentView()

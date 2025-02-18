@@ -2,23 +2,22 @@ import SwiftUI
 
 struct KategorilerView: View {
     @StateObject private var viewModel = kategorilerViewModel()
-    @State private var selectedCategory: String? = nil
+    @State private var selectedCategoryID: String? = nil
     @State private var navigateToSearchView = false
 
     var body: some View {
         NavigationStack {
             List(viewModel.categories) { category in
                 HStack {
-                    // Kategori adına basıldığında alt kategorilere gider
                     NavigationLink(destination: SubcategoriesView(category: category)) {
                         Text(category.name)
                             .padding()
                     }
                     Spacer()
 
-                    // "Tümünü Göster" Butonu (Sadece Butona Basınca Çalışacak)
+                    // "Tümünü Göster" Butonu
                     Button(action: {
-                        selectedCategory = category.name
+                        selectedCategoryID = category.id
                         navigateToSearchView = true
                     }) {
                         Text("Tümünü Göster")
@@ -30,26 +29,22 @@ struct KategorilerView: View {
                                     .stroke(Color.blue, lineWidth: 1)
                             )
                     }
-                    .buttonStyle(PlainButtonStyle()) // Buton tasarımını korumak için
+                    .buttonStyle(PlainButtonStyle()) // Butonun tıklanabilir alanını düzenler
                 }
             }
             .onAppear {
                 viewModel.fetchCategories()
             }
-            .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
-            .background(Color.anaRenk2) // Arka plan rengini belirler
+            .scrollContentBackground(.hidden)
+            .background(Color.anaRenk2)
             .navigationTitle("Kategoriler")
 
-            // Butona basınca yönlendirme yapacak NavigationLink
-            .background(
-                NavigationLink(
-                    destination: KategoriSearchAnaView(categoryName: selectedCategory ?? ""),
-                    isActive: $navigateToSearchView
-                ) {
-                    EmptyView()
+            // SwiftUI 16+ uyumlu Navigation
+            .navigationDestination(isPresented: $navigateToSearchView) {
+                if let categoryID = selectedCategoryID {
+                    KategoriSearchAnaView(categoryID: categoryID)
                 }
-                .hidden()
-            )
+            }
         }
     }
 }

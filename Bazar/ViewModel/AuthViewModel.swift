@@ -15,15 +15,23 @@ class AuthViewModel: ObservableObject {
             objectWillChange.send() // SwiftUI güncellemesini zorla
         }
     }
+    @Published var currentUserId: String? = Auth.auth().currentUser?.uid
 
     func checkAuthState() {
-        isSignedIn = Auth.auth().currentUser != nil
+        if let user = Auth.auth().currentUser {
+            isSignedIn = true
+            currentUserId = user.uid
+        } else {
+            isSignedIn = false
+            currentUserId = nil
+        }
     }
 
     func signOut() {
         do {
             try Auth.auth().signOut()
             isSignedIn = false
+            currentUserId = nil
         } catch {
             print("Error signing out: \(error.localizedDescription)")
         }

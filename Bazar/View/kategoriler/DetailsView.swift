@@ -7,40 +7,63 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct DetailsView: View {
     var category: kategori
     var subcategory: Subcategory
     @StateObject private var viewModel = DetailViewModel()
-
-    // Yükleniyor göstergesi
-    @State private var isLoading = true
+    @State private var selectedDetail: String? = nil
+    @State private var navigateToSearchView = false
 
     var body: some View {
-        VStack {
-            // Detayları listele
+        NavigationStack {
             List(viewModel.details) { detail in
-                NavigationLink(destination: KategoriSearchView(detailName: detail.name)) {
-                    HStack {
-                        Text(detail.name)  // `name` özelliğini listele
+                HStack {
+                    // 🔹 Detay adına tıklanınca MoreDetailsView açılır
+                    NavigationLink(destination: MoreDetailsView(
+                        categoryId: category.id!,
+                        subcategoryId: subcategory.id!,
+                        detailId: detail.id ?? "", categoryName: detail.name
+                    )) {
+                        Text(detail.name)
                             .padding()
-                        Spacer()
-                     //   Image(systemName: "chevron.right") // Sağda yönlendirme oku
                     }
-                    .contentShape(Rectangle()) // Tıklanabilir alanı genişletir
+                    Spacer()
+
+                    // 🔹 "Tümünü Göster" Butonu (Sadece Butona Basınca Çalışacak)
+                    Button(action: {
+                        selectedDetail = detail.id
+                        navigateToSearchView = true
+                    }) {
+                        Text("Tümünü Göster")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                            .padding(6)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.blue, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle()) // Buton tasarımını korumak için
                 }
             }
-            .scrollContentBackground(.hidden)
+            .onAppear {
+                viewModel.fetchDetails(for: category.id!, subcategoryId: subcategory.id!) {
+                    // İşlem tamamlandığında yapılacaklar (Opsiyonel)
+                    print("Detaylar başarıyla yüklendi!")
+                }
+            }
+            .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
             .background(Color.anaRenk2) // Arka plan rengini belirler
-        }
-        .navigationTitle(subcategory.name)
-        .onAppear {
-            if let categoryId = category.id, let subcategoryId = subcategory.id {
-                viewModel.fetchDetails(for: categoryId, subcategoryId: subcategoryId) {
-                    // Veri çekme tamamlandığında `isLoading`'i false yapalım
-                    isLoading = false
+            .navigationTitle(subcategory.name)
+
+            // 🔹 Butona basınca yönlendirme yapacak SwiftUI 16+ uyumlu navigation
+            .navigationDestination(isPresented: $navigateToSearchView) {
+                if let detailID = selectedDetail {
+                    KategoriSearchView(morecategoriID: detailID)
                 }
             }
         }
-        .scrollContentBackground(.hidden)
     }
 }

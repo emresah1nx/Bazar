@@ -1,14 +1,7 @@
-//
-//  ProductRowView.swift
-//  Bazar
-//
-//  Created by Emre Şahin on 30.01.2025.
-//
-
 import SwiftUI
 
-struct ProductRowView: View {
-    @Binding var product: Product // ✅ Güncellenebilir hale getirildi
+struct FavoritesRowView: View {
+    let product: Product
 
     var body: some View {
         HStack {

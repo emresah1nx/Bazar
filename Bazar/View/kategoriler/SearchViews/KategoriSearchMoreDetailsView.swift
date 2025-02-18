@@ -1,12 +1,20 @@
+//
+//  KategoriSearchMoreDetailsView.swift
+//  Bazar
+//
+//  Created by Emre Şahin on 11.02.2025.
+//
+
 import SwiftUI
 import SDWebImageSwiftUI
 import FirebaseFirestore
 
-struct KategoriSearchView: View {
-    var morecategoriID: String  // 🔹 Artık ID ile filtreleme yapıyoruz
-    @StateObject private var viewModel = ilanItem()
+struct KategoriSearchMoreDetailsView: View {
+    let moreDetail: MoreDetail
+    
+    @State private var ads: [ilanlar] = [] // İlanları saklamak için
     @State private var searchText: String = ""
-    @State private var selectedAd: ilanlar? // ✅ Sheet için Seçilen ilan
+    @State private var selectedAd: ilanlar? // Seçili ilanı göstermek için
 
     var body: some View {
         GeometryReader { geo in
@@ -14,7 +22,7 @@ struct KategoriSearchView: View {
             let itemGenişlik = (ekranGenişlik - 70) / 2
             
             NavigationStack {
-            VStack {
+                VStack {
                 ScrollView {
                     // 🔹 Arama Çubuğu
                     HStack {
@@ -24,42 +32,39 @@ struct KategoriSearchView: View {
                     }
                     .padding(.horizontal)
                     
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()), GridItem(.flexible())
-                    ], spacing: 5) {
-                        ForEach(filteredAds()) { ad in
-                            Button(action: {
-                                selectedAd = ad // ✅ Seçilen ilanı atıyoruz
-                            }) {
-                                VStack {
-                                    WebImage(url: URL(string: ad.imageUrl.first ?? ""))
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: itemGenişlik, height: itemGenişlik * 1.2)
-                                        .cornerRadius(10)
-                                        .shadow(radius: 2)
-                                        .clipped()
-                                    
-                                    Text(ad.title)
-                                        .font(.headline)
-                                        .lineLimit(1)
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal)
-                                        .frame(maxWidth: .infinity)
-                                    
-                                    Text("\(ad.price, specifier: "%.2f") €")
-                                        .font(.subheadline)
-                                        .foregroundColor(.yellow)
-                                        .padding(.horizontal)
-                                        .frame(maxWidth: .infinity)
-                                    
-                                    Spacer()
-                                }
-                                .padding(5)
-                                .background(Color.white.opacity(0.2))
-                                .cornerRadius(10)
-                                .shadow(radius: 5)
-                                .frame(width: 150)
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                        ForEach(filteredIlanlar(searchText: searchText)) { ilan in
+                            VStack(alignment: .leading) {
+                                WebImage(url: URL(string: ilan.imageUrl.first ?? ""))
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: itemGenişlik, height: itemGenişlik * 1.2)
+                                    .cornerRadius(10)
+                                    .shadow(radius: 2)
+                                    .clipped()
+                                
+                                Text(ilan.title)
+                                    .font(.headline)
+                                    .lineLimit(1)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal)
+                                    .frame(maxWidth: .infinity)
+                                
+                                Text("\(ilan.price, specifier: "%.2f") €")
+                                    .font(.subheadline)
+                                    .foregroundColor(.yellow)
+                                    .padding(.horizontal)
+                                    .frame(maxWidth: .infinity)
+                                
+                                Spacer()
+                            }
+                            .padding(5)
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(10)
+                            .shadow(radius: 5)
+                            .frame(width: 150)
+                            .onTapGesture {
+                                selectedAd = ilan
                             }
                         }
                     }
@@ -67,32 +72,22 @@ struct KategoriSearchView: View {
                 }
                 .background(Color.anaRenk2)
             }
-            .navigationTitle("İlanlar")
-            .onAppear {
-                fetchAds()
+                .navigationTitle(moreDetail.name)
+                .onAppear {
+                    fetchAdsByCategory(moreDetail.id!) // ✅ Firestore'dan kategoriye göre ilanları çekiyor
+                }
+                .sheet(item: $selectedAd) { ilan in
+                    DetayView(ad: ilan) // ✅ Seçili ilan detay ekranı açılıyor
+                }
             }
-            // ✅ Sheet ile Detay Görünümünü Aç
-            .sheet(item: $selectedAd) { ad in
-                DetayView(ad: ad)
-            }
-        }
         }
     }
-
-    // 🔹 Arama metnine göre filtreleme fonksiyonu
-    func filteredAds() -> [ilanlar] {
-        if searchText.isEmpty {
-            return viewModel.ads
-        } else {
-            return viewModel.ads.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
-
-    // 🔹 Firestore'dan ilgili **kategori ID’sine** ait ilanları çekme
-    func fetchAds() {
+    
+    // 🔹 **Firestore'dan kategoriye göre ilanları çekme fonksiyonu**
+    func fetchAdsByCategory(_ categoryID: String) {
         let db = Firestore.firestore()
         db.collection("products")
-            .whereField("marka", isEqualTo: morecategoriID)
+            .whereField("model", isEqualTo: categoryID) // Kategoriye göre filtreleme
             .getDocuments { snapshot, error in
                 if let error = error {
                     print("Hata: \(error.localizedDescription)")
@@ -105,7 +100,7 @@ struct KategoriSearchView: View {
                 }
 
                 DispatchQueue.main.async {
-                    self.viewModel.ads = documents.map { doc in
+                    self.ads = documents.map { doc in
                         let data = doc.data()
                         
                         // **Eksik olan verileri varsayılan değerlerle tamamla**
@@ -139,6 +134,15 @@ struct KategoriSearchView: View {
                     }
                 }
             }
-        print("Firestore'a giden kategori ID: \(morecategoriID)")
+    }
+
+    // 🔹 **Arama filtresi**
+    func filteredIlanlar(searchText: String) -> [ilanlar] {
+        if searchText.isEmpty {
+            return ads
+        } else {
+            return ads.filter { $0.title.lowercased().contains(searchText.lowercased()) }
+        }
     }
 }
+

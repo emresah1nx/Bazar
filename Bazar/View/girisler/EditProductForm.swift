@@ -36,44 +36,83 @@ struct EditProductForm: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // 1) Kategori Picker
-                KategoriAltPickerView(
-                    title: "Kategori Seçin",
-                    items: viewModel.categories.map { $0 as Kategori? },
-                    itemName: { kategori in
-                        kategori.name  // Kategori'nin hangi özelliğini gösterecekseniz
-                    },
-                    selection: $selectedCategory
-                ) { category in
-                    // onChange
-                    if let category = category {
-                        viewModel.fetchSubcategories(forCategoryId: category.id)
+                // 1) Kategori Seçimi Butonları
+                VStack(alignment: .leading) {
+                    Text("Kategori Seçin")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.leading)
+                    
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
+                        ForEach(viewModel.categories, id: \.id) { category in
+                            Button(action: {
+                                selectedCategory = category
+                                selectedSubcategory = nil
+                                selectedDetail = nil
+                                viewModel.fetchSubcategories(forCategoryId: category.id)
+                            }) {
+                                Text(category.name)
+                                    .frame(width: 100, height: 40) // Sabit genişlik ve yükseklik
+                                    .background(selectedCategory?.id == category.id ? Color.blue : Color.gray)
+                                    .cornerRadius(8)
+                                    .foregroundColor(.white)
+                            }
+                        }
                     }
+                    .padding(.horizontal,5)
                 }
-                
-                // 2) Alt Kategori Picker
-                KategoriAltPickerView(
-                    title: "Alt Kategori Seçin",
-                    items: viewModel.subcategories.map { $0 as SubKategori? },
-                    itemName: { subcat in
-                        subcat.name
-                    },
-                    selection: $selectedSubcategory
-                ) { subcategory in
-                    if let subcategory = subcategory, let cat = selectedCategory {
-                        viewModel.fetchDetails(forCategoryId: cat.id, subcategoryId: subcategory.id)
+
+                // 2) Alt Kategori Seçimi Butonları
+                if let selectedCategory = selectedCategory {
+                    VStack(alignment: .leading) {
+                        Text("Alt Kategori Seçin")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.leading)
+                        
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
+                            ForEach(viewModel.subcategories, id: \.id) { subcategory in
+                                Button(action: {
+                                    selectedSubcategory = subcategory
+                                    selectedDetail = nil
+                                    viewModel.fetchDetails(forCategoryId: selectedCategory.id, subcategoryId: subcategory.id)
+                                }) {
+                                    Text(subcategory.name)
+                                        .frame(width: 100, height: 40) // Sabit genişlik ve yükseklik
+                                        .background(selectedSubcategory?.id == subcategory.id ? Color.blue : Color.gray)
+                                        .cornerRadius(8)
+                                        .foregroundColor(.white)
+                                }
+                            }
+                        }
                     }
+                    .padding(.horizontal)
                 }
-                
-                // 3) Detay Picker
-                KategoriAltPickerView(
-                    title: "Detay Seçin",
-                    items: viewModel.details.map { $0 as Detailss? },
-                    itemName: { detail in
-                        detail.name
-                    },
-                    selection: $selectedDetail
-                )
+
+                // 3) Detay Seçimi Butonları
+                if let selectedSubcategory = selectedSubcategory {
+                    VStack(alignment: .leading) {
+                        Text("Detay Seçin")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.leading)
+                        
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
+                            ForEach(viewModel.details, id: \.id) { detail in
+                                Button(action: {
+                                    selectedDetail = detail
+                                }) {
+                                    Text(detail.name)
+                                        .frame(width: 100, height: 40) // Sabit genişlik ve yükseklik
+                                        .background(selectedDetail?.id == detail.id ? Color.blue : Color.gray)
+                                        .cornerRadius(8)
+                                        .foregroundColor(.white)
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
                 
                 // 4) İlan Başlığı
                 TextField("", text: $title, prompt: Text("İlan Başlığı").foregroundColor(.white))
@@ -118,7 +157,7 @@ struct EditProductForm: View {
                     ImagePicker(selectedImage: $selectedImages)
                 }
                 
-                // Seçilen Resimler
+                 // Seçilen Resimler
                 ScrollView(.horizontal) {
                     HStack {
                         ForEach(selectedImages.indices, id: \.self) { index in

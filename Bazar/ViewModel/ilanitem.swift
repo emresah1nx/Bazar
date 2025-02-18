@@ -30,10 +30,11 @@ class ilanItem: ObservableObject {
                       let createdAt = data["createdAt"] as? Timestamp,
                       let altcategory = data["altcategory"] as? String,
                       let tempCategory = data["tempCategory"] as? String,
-                      let morecategory = data["morecategory"] as? String,
+                      let marka = data["marka"] as? String,
+                      let model = data["model"] as? String,
                       let description = data["description"] as? String else { return nil }
 
-                return ilanlar(id: doc.documentID, imageUrl: imageUrl, userId: userId, title: title, price: price, createdAt: createdAt, description: description, altcategory: altcategory,tempCategory: tempCategory,moreCategory: morecategory)
+                return ilanlar(id: doc.documentID, imageUrl: imageUrl, userId: userId, title: title, price: price, createdAt: createdAt, description: description, altcategory: altcategory,tempCategory: tempCategory,marka: marka,model: model)
             }
 
             DispatchQueue.main.async {
@@ -56,7 +57,7 @@ class ilanItem: ObservableObject {
             query = query.whereField("altcategory", isEqualTo: subCategoryId)
         }
         if let detailCategoryId = detailCategoryId {
-            query = query.whereField("morecategory", isEqualTo: detailCategoryId)
+            query = query.whereField("marka", isEqualTo: detailCategoryId)
         }
         
         query.getDocuments { [weak self] snapshot, error in
@@ -79,10 +80,11 @@ class ilanItem: ObservableObject {
                       let createdAt = data["createdAt"] as? Timestamp,
                       let altcategory = data["altcategory"] as? String,
                       let tempCategory = data["tempCategory"] as? String,
-                      let morecategory = data["morecategory"] as? String,
+                      let marka = data["marka"] as? String,
+                      let model = data["model"] as? String,
                       let description = data["description"] as? String else { return nil }
                 
-                return ilanlar(id: doc.documentID, imageUrl: imageUrl, userId: userId, title: title, price: price, createdAt: createdAt, description: description, altcategory: altcategory,tempCategory: tempCategory,moreCategory: morecategory)
+                return ilanlar(id: doc.documentID, imageUrl: imageUrl, userId: userId, title: title, price: price, createdAt: createdAt, description: description, altcategory: altcategory,tempCategory: tempCategory,marka: marka,model: model)
             }
             
             DispatchQueue.main.async {

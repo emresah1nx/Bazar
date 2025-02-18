@@ -1,124 +1,150 @@
 import SwiftUI
 import FirebaseFirestore
+import SDWebImageSwiftUI
 
 struct DetayView: View {
-    let ad: ilanlar // Tıklanan ilan bilgisi
-    @StateObject private var firestoreManager = FirestoreManager() // Alt kategori adı için manager
-    
-    @State private var categoryName: String = "" // Kategori adı için state
+    let ad: ilanlar
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @StateObject private var userViewModel = UserViewModel()
+    @State private var chatId: String? = nil
+    @State private var isNavigatingToChat = false
+
+    private let ekranGenislik = UIScreen.main.bounds.width
+    private let ekranYükseklik = UIScreen.main.bounds.height
 
     var body: some View {
-        GeometryReader { geo in
-            let ekranYükseklik = geo.size.height
-            let ekranGenislik = geo.size.width
-
-            ZStack {
-                // Gradient Arkaplan (Sayfanın tamamına yayılır)
-                LinearGradient(gradient: Gradient(colors: [
-                    Color.orange.opacity(0.7),
-                    Color.pink.opacity(0.8)
-                ]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                .edgesIgnoringSafeArea(.vertical) // **Alt ve üst safe area ignore edildi**
-                
-                ScrollView {
-                    VStack(spacing: 20) {
-                        // **En Üste Navigation Bar ile Çakışmayı Önlemek İçin Boşluk Ekledik**
-                        Spacer().frame(height: 10)
-
-                        // **İlan Resimleri Slider (TabView)**
-                        TabView {
-                            ForEach(ad.imageUrl, id: \.self) { photoURL in
-                                if let url = URL(string: photoURL) {
-                                    AsyncImage(url: url) { phase in
-                                        switch phase {
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: ekranGenislik - 40, height: ekranYükseklik / 2.5)
-                                                .clipped()
-                                        default:
-                                            ProgressView()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-                        .frame(width: ekranGenislik - 40, height: ekranYükseklik / 2.5)
-                        .cornerRadius(20)
-                        .shadow(radius: 10)
-
-                        // **Kategori Adı Firestore'dan Çekiliyor**
-                        bilgiKartıMetin(text: categoryName.isEmpty ? "Kategori yükleniyor..." : categoryName)
-                        
-                        // **Başlık**
-                        bilgiKartıMetin(text: ad.title, fontSize: 26, fontWeight: .bold)
-                        
-                        // **Fiyat**
-                        Text("₺\(ad.price, specifier: "%.2f")")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.green)
-                            .padding()
-                            .frame(width: ekranGenislik - 40)
-                            .background(Color.white.opacity(0.2))
-                            .cornerRadius(15)
-                            .shadow(radius: 5)
-
-                        // **Açıklama**
-                        bilgiKartıMetin(text: ad.description, fontSize: 22, fontWeight: .regular)
-
-                    }
-                    .padding(.horizontal, 20)  // Taşmayı engellemek için yatay padding
-                    .padding(.bottom, 30) // Ekstra alttan boşluk eklenmez
-                    .onAppear {
-                        // Firestore'dan Kategori İsmini Çek
-                        firestoreManager.fetchCategoryName(for: ad.altcategory) { name in
-                            categoryName = name
-                        }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 15) {
+                // **İlan Görseli**
+                TabView {
+                    ForEach(ad.imageUrl, id: \.self) { imageUrl in
+                        WebImage(url: URL(string: imageUrl))
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: ekranGenislik, height: ekranYükseklik * 0.35)
+                            .clipped()
                     }
                 }
+                .tabViewStyle(PageTabViewStyle())
+                .frame(height: ekranYükseklik * 0.35)
+
+                // **İlan Bilgileri**
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(ad.title)
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text("₺\(ad.price, specifier: "%.2f")")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
+
+                    Text(ad.description)
+                        .font(.body)
+                        .foregroundColor(.gray)
+                }
+                .padding(.horizontal)
+
+                // **İlan Sahibi Bilgisi**
+                HStack {
+                    if let profileUrl = userViewModel.userInfo[ad.userId]?.1, let url = URL(string: profileUrl) {
+                        WebImage(url: url)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 50, height: 50)
+                            .clipShape(Circle())
+                    } else {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(.gray)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text(userViewModel.userInfo[ad.userId]?.0 ?? "Bilinmeyen Kullanıcı")
+                            .font(.headline)
+                        Text("İlan sahibi")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal)
+
+                // **Mesaj Gönder Butonu**
+                if let currentUserId = authViewModel.currentUserId, currentUserId != ad.userId {
+                    Button(action: { startChat() }) {
+                        HStack {
+                            Image(systemName: "message.fill")
+                            Text("Mesaj Gönder")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                    }
+                    .padding(.horizontal)
+                }
+            }
+            .padding(.bottom, 30)
+            .onAppear {
+                userViewModel.fetchUserDetails(for: [ad.userId]) // 🔥 Kullanıcı bilgilerini çek
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    // **GENEL BİLGİ KARTI METİN STİLİ (KÜÇÜK BİR COMPONENT)**
-    private func bilgiKartıMetin(text: String, fontSize: CGFloat = 24, fontWeight: Font.Weight = .semibold) -> some View {
-        Text(text)
-            .font(.system(size: fontSize))
-            .fontWeight(fontWeight)
-            .multilineTextAlignment(.center)
-            .padding()
-            .frame(width: UIScreen.main.bounds.width - 40) // **Maksimum genişlik ayarlandı**
-            .background(Color.white.opacity(0.2))
-            .cornerRadius(15)
-            .shadow(radius: 5)
-    }
-}
-
-// **FirestoreManager (Kategori İsmini Getiriyor)**
-class FirestoreManager: ObservableObject {
-    private var db = Firestore.firestore()
-
-    /// **Kategori ID yerine, ilgili kategorinin adını (name) getiriyoruz**
-    func fetchCategoryName(for categoryId: String, completion: @escaping (String) -> Void) {
-        db.collection("subcategories").document(categoryId).getDocument { document, error in
-            if let error = error {
-                print("Hata: \(error.localizedDescription)")
-                completion("Kategori bulunamadı")
-                return
-            }
-            if let document = document, document.exists {
-                if let name = document.data()?["name"] as? String {
-                    completion(name) // **Kategori adını al ve gönder**
-                } else {
-                    completion("Kategori adı eksik")
-                }
-            } else {
-                completion("Kategori bulunamadı")
+        .navigationDestination(isPresented: $isNavigatingToChat) {
+            if let chatId = chatId {
+                MesajlarView(
+                    chatId: chatId,
+                    senderId: authViewModel.currentUserId ?? "",
+                    receiverId: ad.userId
+                )
             }
         }
+    }
+
+    // **Sohbet Başlatma Fonksiyonu**
+    private func startChat() {
+        guard let senderId = authViewModel.currentUserId else { return }
+        let receiverId = ad.userId
+
+        let db = Firestore.firestore()
+        db.collection("messages")
+            .whereField("userIds", arrayContains: senderId)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("🔥 Sohbet kontrol hatası: \(error.localizedDescription)")
+                    return
+                }
+
+                if let existingChat = snapshot?.documents.first(where: { doc in
+                    let userIds = doc.data()["userIds"] as? [String] ?? []
+                    return userIds.contains(receiverId)
+                }) {
+                    DispatchQueue.main.async {
+                        self.chatId = existingChat.documentID
+                        self.isNavigatingToChat = true
+                    }
+                } else {
+                    let newChatRef = db.collection("messages").document()
+                    let newChatData: [String: Any] = [
+                        "userIds": [senderId, receiverId],
+                        "lastMessage": "",
+                        "lastMessageTimestamp": Timestamp()
+                    ]
+                    newChatRef.setData(newChatData) { error in
+                        if let error = error {
+                            print("🔥 Yeni sohbet oluşturma hatası: \(error.localizedDescription)")
+                        } else {
+                            DispatchQueue.main.async {
+                                self.chatId = newChatRef.documentID
+                                self.isNavigatingToChat = true
+                            }
+                        }
+                    }
+                }
+            }
     }
 }

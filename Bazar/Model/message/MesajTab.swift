@@ -13,7 +13,7 @@ struct MesajTab: View {
 
     var body: some View {
         if authViewModel.isSignedIn {
-            MessajlarView()
+            SohbetListesiView()
         } else {
             AuthView()
         }

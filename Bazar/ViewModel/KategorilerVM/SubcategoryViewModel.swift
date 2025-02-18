@@ -34,7 +34,7 @@ class SubcategoryViewModel: ObservableObject {
     // Firebase'den ilgili kategoriye ait tüm ilanları çek
     func fetchAllListings(for categoryId: String) {
         db.collection("products")
-            .whereField("tempCategory", isEqualTo: categoryId) // Seçili kategoriye göre filtreleme
+            .whereField("altcategory", isEqualTo: categoryId) // Seçili kategoriye göre filtreleme
             .getDocuments { snapshot, error in
                 if let error = error {
                     print("Error fetching listings: \(error)")

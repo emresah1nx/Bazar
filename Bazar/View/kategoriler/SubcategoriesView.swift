@@ -19,7 +19,7 @@ struct SubcategoriesView: View {
 
                     // "Tümünü Göster" Butonu (Sadece Butona Basınca Çalışacak)
                     Button(action: {
-                        selectedSubcategory = subcategory.name
+                        selectedSubcategory = subcategory.id
                         navigateToSearchView = true
                     }) {
                         Text("Tümünü Göster")
@@ -43,16 +43,12 @@ struct SubcategoriesView: View {
             .background(Color.anaRenk2) // Arka plan rengini belirler
             .navigationTitle(category.name)
 
-            // Butona basınca yönlendirme yapacak NavigationLink
-            .background(
-                NavigationLink(
-                    destination: KategoriSearchSubView(subcategoryName: selectedSubcategory ?? ""),
-                    isActive: $navigateToSearchView
-                ) {
-                    EmptyView()
+            // Butona basınca yönlendirme yapacak SwiftUI 16+ uyumlu navigation
+            .navigationDestination(isPresented: $navigateToSearchView) {
+                if let subcategoryID = selectedSubcategory {
+                    KategoriSearchSubView(subcategoryID: subcategoryID)
                 }
-                .hidden()
-            )
+            }
         }
     }
 }
