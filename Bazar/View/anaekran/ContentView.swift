@@ -76,7 +76,7 @@ struct ContentView: View {
         // **Tab Bar Şeffaflık Ayarları**
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithTransparentBackground()
-        tabBarAppearance.backgroundColor = UIColor(named: "anaRenk1")?.withAlphaComponent(1) // Hafif şeffaf
+        tabBarAppearance.backgroundColor = UIColor(Color.anaRenk2).withAlphaComponent(1) // Hafif şeffaf
         tabBarAppearance.shadowColor = .clear
 
         renkdeğiştir(itemAppearance: tabBarAppearance.stackedLayoutAppearance)

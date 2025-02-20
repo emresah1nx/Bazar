@@ -15,7 +15,7 @@ struct SohbetListesiView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
-                    .padding(.top, 20)
+                    .padding(.top, 35)
 
                 if chatViewModel.chats.isEmpty {
                     VStack {
@@ -33,7 +33,11 @@ struct SohbetListesiView: View {
                     ScrollView {
                         Spacer()
                         VStack(spacing: 10) {
-                            ForEach(chatViewModel.chats) { chat in
+                            // 📌 Sohbetleri son mesaja göre sıralıyoruz
+                            ForEach(chatViewModel.chats.sorted(by: {
+                                $0.lastMessageTimestamp.dateValue() > $1.lastMessageTimestamp.dateValue()
+                            })) { chat in
+                                
                                 let receiverId = chat.otherUserId(currentUserId: authViewModel.currentUserId ?? "")
 
                                 NavigationLink(destination: MesajlarView(
@@ -73,6 +77,7 @@ struct SohbetListesiView: View {
                                             .foregroundColor(.gray)
                                     }
                                     .padding()
+                                    .padding(.horizontal,10)
                                     .background(Color.black.opacity(0.2))
                                     .cornerRadius(15)
                                     .shadow(radius: 3)
@@ -85,7 +90,7 @@ struct SohbetListesiView: View {
             }
             .padding()
             .background(LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
+                gradient: Gradient(colors: [Color.anaRenk1.opacity(0.7), Color.anaRenk2.opacity(0.9)]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             ))

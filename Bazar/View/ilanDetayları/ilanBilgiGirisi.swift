@@ -55,7 +55,11 @@ struct ilanBilgiGirisi: View {
                             .foregroundColor(.white)
                         }
                     }
-                    .background(Color.anaRenk2)
+                    .background(LinearGradient(
+                        gradient: Gradient(colors: [Color.anaRenk1.opacity(0.7), Color.anaRenk2.opacity(0.9)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
                 }
                 .onAppear {
                     viewModel.fetchCategories()

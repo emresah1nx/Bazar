@@ -18,62 +18,73 @@ struct VitrinView: View {
             NavigationView {
                 VStack {
                     ScrollView {
-                        Spacer()
                         HStack {
-                            TextField("", text: $searchText, prompt : Text("Ara...").foregroundColor(Color.yazıRenk1))
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.leading, 10)
-                                .background(Color.anaRenk1)
-                                
-                            Button(action: {
-                                viewModel.searchAds(query: searchText)
-                            }) {
-                                Text(Image(systemName: "magnifyingglass.circle"))
-                                    .foregroundColor(.white)
-                                    .padding(.vertical,5)
-                                    .padding(.horizontal,10)
-                                    .background(Color.yazıRenk1)
-                                    .cornerRadius(10)
-                            }
-                            .foregroundColor(.yazıRenk3)
-                            .padding(.trailing,10)
+                            TextField("", text: $searchText, prompt: Text("Ara...").foregroundColor(Color.gray))
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding()
+                                .background(Color.white.opacity(0.2))
+                                .cornerRadius(5)
+                                .foregroundColor(.white)
                         }
+                        .cornerRadius(5)
+                        .padding(5)
                         
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
-                            ForEach(viewModel.ads) { ads in
+                            ForEach(filteredAds()) { ads in
                                 NavigationLink(
                                     destination: DetayView(ad: ads)
                                 ) {
                                     VStack {
-                                        AdImageView(imageUrl: ads.imageUrl.first ?? "")
-                                            .frame(width: itemGenişlik, height: itemYükseklik)
-                                            .cornerRadius(10)
-                                            .shadow(radius: 2)
-                                            .clipped()
-
+                                        ZStack(alignment: .topTrailing) { // ZStack hizalama ekledik
+                                            AdImageView(imageUrl: ads.imageUrl.first ?? "")
+                                                .frame(width: itemGenişlik , height: itemYükseklik)
+                                                .cornerRadius(10)
+                                                .shadow(radius: 2)
+                                                .clipped()
+                                            
+                                            
+                                            // 🖤 Favori Butonu - Sağ üst köşe
+                                            Button(action: {
+                                                toggleFavorite(adId: ads.id)
+                                            }) {
+                                                Image(systemName: favoriteAds.contains(ads.id) ? "heart.fill" : "heart")
+                                                    .foregroundColor(favoriteAds.contains(ads.id) ? .red : .white)
+                                                    .padding(7)
+                                                    .background(Color.black.opacity(0.7))
+                                                    .clipShape(Circle())
+                                            }
+                                            .padding(7) // Kenarlardan biraz boşluk bırakmak için padding ekledik
+                                            .padding(.top, -5)
+                                            .padding(.trailing, -5)
+                                        }
+                                        
                                         Text(ads.title)
                                             .font(.headline)
                                             .lineLimit(1)
                                             .foregroundColor(.white)
                                             .frame(maxWidth: .infinity)
-
+                                        
                                         Text("\(ads.price, specifier: "%.2f") €")
                                             .font(.subheadline)
                                             .foregroundColor(.yellow)
                                             .frame(maxWidth: .infinity)
+                                            .padding(.bottom,3)
                                     }
                                     .background(Color.white.opacity(0.2))
                                     .cornerRadius(10)
-                                    .shadow(radius: 5)
+                                    .shadow(radius: 2)
                                     .frame(width: itemGenişlik)
-                                    
                                 }
                                 .disabled(ads.title.isEmpty) // Eğer ilan başlığı eksikse butonu kapat
                             }
                         }
                         .padding(.top,0)
                     }
-                    .background(Color.anaRenk2)
+                    .background(LinearGradient(
+                        gradient: Gradient(colors: [Color.anaRenk1.opacity(0.7), Color.anaRenk2.opacity(0.9)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
                 }
                 .onAppear {
                     fetchAds()
@@ -115,6 +126,15 @@ struct VitrinView: View {
                     favoriteAds = Set(favorites)
                 }
             }
+        }
+    }
+    
+    // 🔹 Arama metnine göre filtreleme fonksiyonu
+    func filteredAds() -> [ilanlar] {
+        if searchText.isEmpty {
+            return viewModel.ads
+        } else {
+            return viewModel.ads.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
         }
     }
     

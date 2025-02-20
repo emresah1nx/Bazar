@@ -36,7 +36,11 @@ struct KategorilerView: View {
                 viewModel.fetchCategories()
             }
             .scrollContentBackground(.hidden)
-            .background(Color.anaRenk2)
+            .background(LinearGradient(
+                gradient: Gradient(colors: [Color.anaRenk1.opacity(0.7), Color.anaRenk2.opacity(0.9)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ))
             .navigationTitle("Kategoriler")
 
             // SwiftUI 16+ uyumlu Navigation

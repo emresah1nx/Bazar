@@ -119,7 +119,11 @@ struct ProfileView: View {
                     .padding(.bottom, 20)
                 }
             }
-            .background(Color.anaRenk2)
+            .background(LinearGradient(
+                gradient: Gradient(colors: [Color.anaRenk1.opacity(0.7), Color.anaRenk2.opacity(0.9)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ))
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("Bilgi"), message: Text(alertMessage), dismissButton: .default(Text("Tamam")))
             }

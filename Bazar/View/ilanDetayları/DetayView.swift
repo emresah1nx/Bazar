@@ -8,6 +8,8 @@ struct DetayView: View {
     @StateObject private var userViewModel = UserViewModel()
     @State private var chatId: String? = nil
     @State private var isNavigatingToChat = false
+    //@State private var selectedImageUrl: String? = nil // 🔥 Seçili resmi tutacak
+    @State private var selectedImageUrl: IdentifiableString? = nil
 
     private let ekranGenislik = UIScreen.main.bounds.width
     private let ekranYükseklik = UIScreen.main.bounds.height
@@ -15,18 +17,21 @@ struct DetayView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 15) {
-                // **İlan Görseli**
+                // **İlan Görselleri**
                 TabView {
                     ForEach(ad.imageUrl, id: \.self) { imageUrl in
                         WebImage(url: URL(string: imageUrl))
                             .resizable()
                             .scaledToFill()
-                            .frame(width: ekranGenislik, height: ekranYükseklik * 0.35)
+                            .frame(width: ekranGenislik, height: ekranYükseklik * 0.45)
                             .clipped()
+                            .onTapGesture {
+                                selectedImageUrl = IdentifiableString(id: imageUrl, value: imageUrl) // 🔥 Identifiable hale getirildi!
+                            }
                     }
                 }
                 .tabViewStyle(PageTabViewStyle())
-                .frame(height: ekranYükseklik * 0.35)
+                .frame(height: ekranYükseklik * 0.45)
 
                 // **İlan Bilgileri**
                 VStack(alignment: .leading, spacing: 10) {
@@ -103,6 +108,9 @@ struct DetayView: View {
                 )
             }
         }
+        .fullScreenCover(item: $selectedImageUrl) { imageObj in
+            FullScreenImageView(imageUrl: imageObj.value) // 🔥 `value` ile gerçek URL'yi kullan
+        }
     }
 
     // **Sohbet Başlatma Fonksiyonu**
@@ -146,5 +154,41 @@ struct DetayView: View {
                     }
                 }
             }
+    }
+}
+
+struct IdentifiableString: Identifiable {
+    let id: String
+    let value: String
+}
+
+// **📌 Tam Ekran Resim Görünümü**
+struct FullScreenImageView: View {
+    let imageUrl: String
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            WebImage(url: URL(string: imageUrl))
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(.white)
+                            .padding()
+                    }
+                }
+                Spacer()
+            }
+        }
     }
 }

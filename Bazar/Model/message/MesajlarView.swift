@@ -9,12 +9,12 @@ struct MesajlarView: View {
     let senderId: String
     let receiverId: String
     @State private var userInfo: [String: (String, String?)] = [:] // userID -> (username, profilePhoto)
+    @State private var scrollToBottom: Bool = false // 📌 Kullanıcı elle kaydırma yapabilir.
+    @State private var isFirstLoad = true // 📌 İlk açılışta otomatik aşağı kaydırma için
 
     var body: some View {
-        
         VStack {
             // **Başlık**
-            Spacer()
             HStack {
                 if let profileUrlString = userInfo[receiverId]?.1, let profileUrl = URL(string: profileUrlString) {
                     WebImage(url: profileUrl)
@@ -32,73 +32,97 @@ struct MesajlarView: View {
                 }
 
                 Text(userInfo[receiverId]?.0 ?? "Bilinmeyen Kullanıcı")
-                    .font(.title)
+                    .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .padding(.bottom, 10)
 
                 Spacer()
             }
-            .padding(.top, 30)
-            .padding(.leading,90)
-            .background(Color.blue.opacity(0.8))
+            .padding(.top, 50)
+            .padding(.leading, 110)
+            .padding(.bottom, 5)
+            .background(Color.blue.opacity(0.2))
+
             // **Mesajlar Listesi**
-            ScrollView {
-                VStack(spacing: 10) {
-                    ForEach(chatViewModel.messages) { message in
-                        HStack {
-                            if message.senderId == senderId {
-                                Spacer()
-                                VStack(alignment: .trailing) {
-                                    Text(userInfo[message.senderId]?.0 ?? "Bilinmeyen Kullanıcı") // Kullanıcı adı
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-
-                                    Text(message.text)
-                                        .padding()
-                                        .background(Color.blue)
-                                        .cornerRadius(10)
-                                        .foregroundColor(.white)
-                                        .shadow(radius: 3)
-                                        .frame(maxWidth: 250, alignment: .trailing)
-                                }
-                            } else {
-                                HStack {
-                                    if let profileUrlString = userInfo[message.senderId]?.1, let profileUrl = URL(string: profileUrlString) {
-                                        WebImage(url: profileUrl)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 40, height: 40)
-                                            .clipShape(Circle())
-                                            .padding(.leading,5)
-                                    } else {
-                                        Image(systemName: "person.fill")
-                                            .resizable()
-                                            .frame(width: 40, height: 40)
-                                            .foregroundColor(.gray)
-                                    }
-
-                                    VStack(alignment: .leading) {
-                                        Text(userInfo[message.senderId]?.0 ?? "Bilinmeyen Kullanıcı") // Kullanıcı adı
+            ScrollViewReader { scrollView in
+                ScrollView {
+                    VStack(spacing: 10) {
+                        ForEach(chatViewModel.messages) { message in
+                            HStack {
+                                if message.senderId == senderId {
+                                    Spacer()
+                                    VStack(alignment: .trailing) {
+                                        Text(userInfo[message.senderId]?.0 ?? "Bilinmeyen Kullanıcı")
                                             .font(.caption)
                                             .foregroundColor(.gray)
 
                                         Text(message.text)
                                             .padding()
-                                            .background(Color.gray.opacity(0.2))
+                                            .background(Color.blue)
                                             .cornerRadius(10)
                                             .foregroundColor(.white)
                                             .shadow(radius: 3)
-                                            .frame(maxWidth: 250, alignment: .leading)
+                                            .frame(maxWidth: 250, alignment: .trailing)
                                     }
-                                    Spacer()
+                                } else {
+                                    HStack {
+                                        if let profileUrlString = userInfo[message.senderId]?.1, let profileUrl = URL(string: profileUrlString) {
+                                            WebImage(url: profileUrl)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 40, height: 40)
+                                                .clipShape(Circle())
+                                                .padding(.leading, 5)
+                                        } else {
+                                            Image(systemName: "person.fill")
+                                                .resizable()
+                                                .frame(width: 40, height: 40)
+                                                .foregroundColor(.gray)
+                                        }
+
+                                        VStack(alignment: .leading) {
+                                            Text(userInfo[message.senderId]?.0 ?? "Bilinmeyen Kullanıcı")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+
+                                            Text(message.text)
+                                                .padding()
+                                                .background(Color.gray.opacity(0.2))
+                                                .cornerRadius(10)
+                                                .foregroundColor(.white)
+                                                .shadow(radius: 3)
+                                                .frame(maxWidth: 250, alignment: .leading)
+                                        }
+                                        Spacer()
+                                    }
                                 }
                             }
+                            .padding(.horizontal)
+                            .id(message.id) // 📌 Her mesajın ID'si var
                         }
-                        .padding(.horizontal)
                     }
                 }
-            }
+                .onChange(of: chatViewModel.messages.count) { _ in
+                    if scrollToBottom { // 📌 Sadece mesaj gönderildiğinde en alta kaydır
+                        withAnimation {
+                            if let lastMessage = chatViewModel.messages.last {
+                                scrollView.scrollTo(lastMessage.id, anchor: .bottom)
+                            }
+                        }
+                    }
+                }
+                .onAppear {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // 📌 Mesajları çekme tamamlandıktan sonra en aşağı kaydır
+                                        if isFirstLoad, let lastMessage = chatViewModel.messages.last {
+                                            withAnimation {
+                                                scrollView.scrollTo(lastMessage.id, anchor: .bottom)
+                                            }
+                                            isFirstLoad = false // 📌 İlk açılışta sadece bir kere kaydır
+                                        }
+                                    }
+                                }
+                            }
 
             // **Mesaj Gönderme Alanı**
             HStack {
@@ -113,6 +137,7 @@ struct MesajlarView: View {
                     if !messageText.isEmpty {
                         chatViewModel.sendMessage(chatId: chatId, senderId: senderId, receiverId: receiverId, text: messageText)
                         messageText = ""
+                        scrollToBottom = true // 📌 Yeni mesaj gönderildiğinde en alta kaydır
                     }
                 }) {
                     Image(systemName: "paperplane.fill")
@@ -124,10 +149,12 @@ struct MesajlarView: View {
                         .clipShape(Circle())
                 }
             }
-            .padding()
+            .padding(5)
+            .padding(.bottom,10)
+            .keyboardAdaptive() // 🔥 Klavye açıldığında mesaj giriş alanı yukarı çıkacak.
         }
         .background(LinearGradient(
-            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
+            gradient: Gradient(colors: [Color.anaRenk1.opacity(0.7), Color.anaRenk2.opacity(0.9)]),
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         ))
@@ -137,6 +164,7 @@ struct MesajlarView: View {
             fetchUserDetails()
         }
     }
+
 
     // **Firestore'dan Kullanıcı Bilgilerini Çekme Fonksiyonu**
     private func fetchUserDetails() {

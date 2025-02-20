@@ -55,7 +55,11 @@ struct DetailsView: View {
                 }
             }
             .scrollContentBackground(.hidden) // Liste içeriğinin arka planını gizler
-            .background(Color.anaRenk2) // Arka plan rengini belirler
+            .background(LinearGradient(
+                gradient: Gradient(colors: [Color.anaRenk1.opacity(0.7), Color.anaRenk2.opacity(0.9)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ))
             .navigationTitle(subcategory.name)
 
             // 🔹 Butona basınca yönlendirme yapacak SwiftUI 16+ uyumlu navigation

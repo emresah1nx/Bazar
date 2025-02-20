@@ -27,7 +27,7 @@ struct AdImageView: View {
                 .clipped()
                 
         }
-        .frame(width: 150, height: 150)
+        .frame(width: 200, height: 170)
         .cornerRadius(10)
         .shadow(radius: 5)
     }
