@@ -153,7 +153,7 @@ struct VitrinView: View {
                     return
                 }
 
-                print("✅ Firestore'dan \(documents.count) ilan çekildi.")
+             //   print("✅ Firestore'dan \(documents.count) ilan çekildi.")
 
                 DispatchQueue.main.async {
                     self.viewModel.ads = documents.map { doc in
@@ -172,7 +172,7 @@ struct VitrinView: View {
                         let marka = data["marka"] as? String ?? "Marka Yok"
                         let model = data["model"] as? String ?? "Model Yok"
 
-                        print("📌 İlan Yüklendi: \(title) - Kullanıcı: \(userId)")
+                 //      print("📌 İlan Yüklendi: \(title) - Kullanıcı: \(userId)")
 
                         return ilanlar(
                             id: id,

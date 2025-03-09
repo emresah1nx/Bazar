@@ -13,6 +13,7 @@ class KategoriViewModel: ObservableObject {
     @Published var categories: [Kategori] = [] // Kategoriler listesi
     @Published var subcategories: [SubKategori] = [] // Alt kategoriler listesi
     @Published var details: [Detailss] = [] // Detail listesi
+    @Published var moreDetails: [MoreDetailss] = []
 
     private var db = Firestore.firestore()
 
@@ -92,4 +93,49 @@ class KategoriViewModel: ObservableObject {
                 }
             }
     }
+    
+    func fetchMoreDetails(forCategoryId categoryId: String, subcategoryId: String, detailsId:String) {
+        print("Fetching MoreDetails for Category: \(categoryId), Subcategory: \(subcategoryId), Detail: \(detailsId)")
+
+        db.collection("categories")
+            .document(categoryId)
+            .collection("subcategories")
+            .document(subcategoryId)
+            .collection("details")
+            .document(detailsId)
+            .collection("moreDetail")
+            .getDocuments { [weak self] snapshot, error in
+                
+                if let error = error {
+                    print("MoreDetails verisi alınırken hata: \(error.localizedDescription)")
+                    return
+                }
+
+                guard let documents = snapshot?.documents else {
+                    print("MoreDetails verisi bulunamadı. (Snapshot boş)")
+                    return
+                }
+
+                print("Found \(documents.count) MoreDetails documents.")
+                
+                let fetchedMoreDetails = documents.compactMap { doc -> MoreDetailss? in
+                    let data = doc.data()
+                    print("Document Data: \(data)")  // Firestore'dan gelen ham veriyi görmek için
+                    
+                    guard let name = data["name"] as? String else {
+                        print("Document \(doc.documentID) 'name' alanı eksik!")
+                        return nil
+                    }
+                    
+                    return MoreDetailss(id: doc.documentID, name: name)
+                }
+
+                DispatchQueue.main.async {
+                    print("Fetched MoreDetails: \(fetchedMoreDetails)")
+                    self?.moreDetails = fetchedMoreDetails
+                }
+            }
+    }
+    
+    
 }

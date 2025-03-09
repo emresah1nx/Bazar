@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseMessaging
 
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -32,6 +33,22 @@ struct ContentView: View {
                 .toolbarTitleDisplayMode(.inline)
                 .onAppear {
                     authViewModel.checkAuthState()
+                    Task {
+                        let center = UNUserNotificationCenter.current()
+                        
+                        do {
+                            let success = try await center.requestAuthorization(options : [.alert,.badge,.sound ])
+                            
+                            if success {
+                                UIApplication.shared.registerForRemoteNotifications()
+                                print("PUSHNATİFİCATİON ALLOWED BY USER")
+                            } else {
+                                print("PUSHNATİFİCATİON NOT ALLOWED BY USER")
+                            }
+                        } catch {
+                            print("Error")
+                        }
+                    }
                 }
                 .toolbar {
                     ToolbarItemGroup(placement: .topBarTrailing) {

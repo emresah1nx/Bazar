@@ -4,6 +4,8 @@ import SDWebImageSwiftUI
 
 struct DetayView: View {
     let ad: ilanlar
+    @State private var markaName: String?
+    @State private var modelName: String?
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var userViewModel = UserViewModel()
     @State private var chatId: String? = nil
@@ -35,6 +37,17 @@ struct DetayView: View {
 
                 // **İlan Bilgileri**
                 VStack(alignment: .leading, spacing: 10) {
+                    
+                    HStack {
+                        Text("\(markaName ?? "") >")
+                            .font(.body)
+                            .foregroundColor(.yazıRenk4)
+                        Text("\(modelName ?? "")")
+                            .font(.body)
+                            .foregroundColor(.yazıRenk4)
+                        
+                    }
+                    
                     Text(ad.title)
                         .font(.title)
                         .fontWeight(.bold)
@@ -46,13 +59,13 @@ struct DetayView: View {
 
                     Text(ad.description)
                         .font(.body)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.yazıRenk4)
                 }
                 .padding(.horizontal)
 
                 // **İlan Sahibi Bilgisi**
                 HStack {
-                    if let profileUrl = userViewModel.userInfo[ad.userId]?.1, let url = URL(string: profileUrl) {
+                    if let profileUrl = userViewModel.userInfo[ad.userId]?.2, let url = URL(string: profileUrl) {
                         WebImage(url: url)
                             .resizable()
                             .scaledToFill()
@@ -66,11 +79,11 @@ struct DetayView: View {
                     }
 
                     VStack(alignment: .leading) {
-                        Text(userViewModel.userInfo[ad.userId]?.0 ?? "Bilinmeyen Kullanıcı")
+                        Text("\(userViewModel.userInfo[ad.userId]?.0 ?? "Ad") \(userViewModel.userInfo[ad.userId]?.1 ?? "Soyad") ")
                             .font(.headline)
                         Text("İlan sahibi")
                             .font(.subheadline)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.yazıRenk4)
                     }
                     Spacer()
                 }
@@ -96,8 +109,14 @@ struct DetayView: View {
             .padding(.bottom, 30)
             .onAppear {
                 userViewModel.fetchUserDetails(for: [ad.userId]) // 🔥 Kullanıcı bilgilerini çek
+                fetchMarkaAndModelNames()
             }
         }
+        .background(LinearGradient(
+            gradient: Gradient(colors: [Color.anaRenk1.opacity(0.7), Color.anaRenk2.opacity(0.9)]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        ))
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $isNavigatingToChat) {
             if let chatId = chatId {
@@ -113,6 +132,21 @@ struct DetayView: View {
         }
     }
 
+    
+    // 🔹 **Firestore'dan Marka ve Model İsmini Çekme**
+    private func fetchMarkaAndModelNames() {
+        ad.fetchMarkaName { name in
+            DispatchQueue.main.async {
+                self.markaName = name
+            }
+        }
+
+        ad.fetchModelName { name in
+            DispatchQueue.main.async {
+                self.modelName = name
+            }
+        }
+    }
     // **Sohbet Başlatma Fonksiyonu**
     private func startChat() {
         guard let senderId = authViewModel.currentUserId else { return }

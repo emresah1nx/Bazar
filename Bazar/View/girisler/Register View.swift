@@ -5,11 +5,14 @@ import FirebaseAuth
 struct RegisterView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.presentationMode) var presentationMode
+    @State private var name: String = ""
+    @State private var lastName: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var uid: UUID?
 
     var body: some View {
         ZStack {
@@ -30,6 +33,25 @@ struct RegisterView: View {
                 Spacer()
 
                 VStack(spacing: 15) {
+                    
+                    TextField("", text: $name, prompt: Text("Ad").foregroundColor(.black))
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding()
+                        .background(Color.white)
+                        .foregroundColor(.black)
+                        .cornerRadius(10)
+                        .shadow(radius: 3)
+                        .autocapitalization(.none)
+                    
+                    TextField("", text: $lastName, prompt: Text("Soyad").foregroundColor(.black))
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding()
+                        .background(Color.white)
+                        .foregroundColor(.black)
+                        .cornerRadius(10)
+                        .shadow(radius: 3)
+                        .autocapitalization(.none)
+                    
                     TextField("", text: $email, prompt: Text("E-posta").foregroundColor(.black))
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding()
@@ -46,6 +68,7 @@ struct RegisterView: View {
                         .foregroundColor(.black)
                         .cornerRadius(10)
                         .shadow(radius: 3)
+                        .autocapitalization(.none)
 
                     SecureField("", text: $confirmPassword, prompt: Text("Şifre Tekrar").foregroundColor(.black))
                         .textFieldStyle(PlainTextFieldStyle())
@@ -54,6 +77,7 @@ struct RegisterView: View {
                         .foregroundColor(.black)
                         .cornerRadius(10)
                         .shadow(radius: 3)
+                        .autocapitalization(.none)
                 }
                 .padding(.horizontal, 40)
 
@@ -95,11 +119,40 @@ struct RegisterView: View {
             if let error = error {
                 alertMessage = "Kayıt başarısız: \(error.localizedDescription)"
                 showAlert = true
-            } else {
+            } else if let user = result?.user {
+                
+                let db = Firestore.firestore()
+                let userData: [String:Any] = [
+                    "name":name,
+                    "lastName":lastName,
+                    "email":email,
+                    "password":password,
+                    "uid":user.uid,
+                    "createdAt":Timestamp()
+                ]
+                db.collection("users").document(user.uid).setData(userData) { error in
+                    if let error = error {
+                        print("Kullanıcı Bilgileri Kaydedilemedi: \(error)")
+                    } else {
+                        alertMessage = "Kayıt Başarılı!"
+                        authViewModel.isSignedIn = true
+                    }
+                    showAlert = true
+                }
+            }
+            
+            
+            
+            
+    /*        else {
                 authViewModel.isSignedIn = true
                 alertMessage = "Kayıt Başarılı!"
                 showAlert = true
             }
+            
+            */
+            
+            
         }
     }
 }

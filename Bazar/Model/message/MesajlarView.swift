@@ -8,15 +8,16 @@ struct MesajlarView: View {
     let chatId: String
     let senderId: String
     let receiverId: String
-    @State private var userInfo: [String: (String, String?)] = [:] // userID -> (username, profilePhoto)
+    @State private var userInfo: [String: (String,String, String?)] = [:] // userID -> (username, profilePhoto)
     @State private var scrollToBottom: Bool = false // 📌 Kullanıcı elle kaydırma yapabilir.
     @State private var isFirstLoad = true // 📌 İlk açılışta otomatik aşağı kaydırma için
+    @State private var keyboardHeight: CGFloat = 0
 
     var body: some View {
         VStack {
             // **Başlık**
             HStack {
-                if let profileUrlString = userInfo[receiverId]?.1, let profileUrl = URL(string: profileUrlString) {
+                if let profileUrlString = userInfo[receiverId]?.2, let profileUrl = URL(string: profileUrlString) {
                     WebImage(url: profileUrl)
                         .resizable()
                         .scaledToFill()
@@ -31,7 +32,8 @@ struct MesajlarView: View {
                         .padding(.bottom, 10)
                 }
 
-                Text(userInfo[receiverId]?.0 ?? "Bilinmeyen Kullanıcı")
+                // Başlık kısmında kullanıcı adını ve soyadını yan yana göster
+                Text("\(userInfo[receiverId]?.0 ?? "Ad") \(userInfo[receiverId]?.1 ?? "Soyad")")
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -53,9 +55,11 @@ struct MesajlarView: View {
                                 if message.senderId == senderId {
                                     Spacer()
                                     VStack(alignment: .trailing) {
-                                        Text(userInfo[message.senderId]?.0 ?? "Bilinmeyen Kullanıcı")
+                                        Text(message.senderId == senderId ?
+                                             message.timestamp.dateValue().formatted(date: .omitted, time: .shortened) :
+                                             "\(userInfo[message.senderId]?.0 ?? "Ad") \(userInfo[message.senderId]?.1 ?? "Soyad")")
                                             .font(.caption)
-                                            .foregroundColor(.gray)
+                                            .foregroundColor(.white)
 
                                         Text(message.text)
                                             .padding()
@@ -67,7 +71,7 @@ struct MesajlarView: View {
                                     }
                                 } else {
                                     HStack {
-                                        if let profileUrlString = userInfo[message.senderId]?.1, let profileUrl = URL(string: profileUrlString) {
+                                        if let profileUrlString = userInfo[message.senderId]?.2, let profileUrl = URL(string: profileUrlString) {
                                             WebImage(url: profileUrl)
                                                 .resizable()
                                                 .scaledToFill()
@@ -78,13 +82,15 @@ struct MesajlarView: View {
                                             Image(systemName: "person.fill")
                                                 .resizable()
                                                 .frame(width: 40, height: 40)
-                                                .foregroundColor(.gray)
+                                                .foregroundColor(.white)
                                         }
 
                                         VStack(alignment: .leading) {
-                                            Text(userInfo[message.senderId]?.0 ?? "Bilinmeyen Kullanıcı")
+                                            Text(message.senderId == senderId ?
+                                                 message.timestamp.dateValue().formatted(date: .omitted, time: .shortened) :
+                                                 "\(userInfo[message.senderId]?.0 ?? "Ad") \(userInfo[message.senderId]?.1 ?? "Soyad")")
                                                 .font(.caption)
-                                                .foregroundColor(.gray)
+                                                .foregroundColor(.white)
 
                                             Text(message.text)
                                                 .padding()
@@ -102,7 +108,11 @@ struct MesajlarView: View {
                             .id(message.id) // 📌 Her mesajın ID'si var
                         }
                     }
+                    Spacer()
+                                           .frame(height: 20) // Padding yüksekliği
+                                           .id("bottomSpacer") // Spacer'a bir ID ver
                 }
+                
                 .onChange(of: chatViewModel.messages.count) { _ in
                     if scrollToBottom { // 📌 Sadece mesaj gönderildiğinde en alta kaydır
                         withAnimation {
@@ -116,7 +126,7 @@ struct MesajlarView: View {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // 📌 Mesajları çekme tamamlandıktan sonra en aşağı kaydır
                                         if isFirstLoad, let lastMessage = chatViewModel.messages.last {
                                             withAnimation {
-                                                scrollView.scrollTo(lastMessage.id, anchor: .bottom)
+                                                scrollView.scrollTo("bottomSpacer", anchor: .bottom)
                                             }
                                             isFirstLoad = false // 📌 İlk açılışta sadece bir kere kaydır
                                         }
@@ -149,8 +159,8 @@ struct MesajlarView: View {
                         .clipShape(Circle())
                 }
             }
-            .padding(5)
-            .padding(.bottom,10)
+            .padding(.horizontal,10)
+            .padding(.bottom,20)
             .keyboardAdaptive() // 🔥 Klavye açıldığında mesaj giriş alanı yukarı çıkacak.
         }
         .background(LinearGradient(
@@ -174,13 +184,15 @@ struct MesajlarView: View {
         for userId in userIds {
             db.collection("users").document(userId).getDocument { document, error in
                 if let document = document, document.exists {
-                    let username = document.get("username") as? String ?? "Bilinmeyen Kullanıcı"
+                    let username = document.get("name") as? String ?? "Ad"
+                    let lastName = document.get("lastName") as? String ?? "Soyad"
                     let profilePhoto = document.get("profilePhoto") as? String
                     DispatchQueue.main.async {
-                        self.userInfo[userId] = (username, profilePhoto)
+                        self.userInfo[userId] = (username,lastName, profilePhoto)
                     }
                 }
             }
         }
     }
+    
 }

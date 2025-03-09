@@ -13,7 +13,7 @@ struct KeyboardAdaptive: ViewModifier {
             .onDisappear {
                 removeKeyboardObservers()
             }
-            .animation(.easeOut(duration: 0.2), value: keyboardHeight)
+            .animation(.easeOut(duration: 0.16), value: keyboardHeight)
     }
 
     private func addKeyboardObservers() {
@@ -21,7 +21,7 @@ struct KeyboardAdaptive: ViewModifier {
             if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
                 DispatchQueue.main.async {
                     withAnimation {
-                        self.keyboardHeight = keyboardFrame.height - 45
+                        self.keyboardHeight = keyboardFrame.height - 15
                         self.isKeyboardVisible = true
                     }
                 }

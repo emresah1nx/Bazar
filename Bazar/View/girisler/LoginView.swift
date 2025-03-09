@@ -1,6 +1,7 @@
 import SwiftUI
 import Firebase
 import FirebaseAuth
+import FirebaseMessaging
 
 struct LoginView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -88,4 +89,5 @@ struct LoginView: View {
             }
         }
     }
+    
 }

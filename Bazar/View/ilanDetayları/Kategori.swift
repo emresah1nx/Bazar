@@ -20,3 +20,7 @@ struct Detailss: Identifiable ,Hashable{
     var id: String
     var name: String
 }
+struct MoreDetailss: Identifiable, Hashable {
+    var id: String?
+    var name: String
+}

@@ -10,7 +10,7 @@ import Firebase
 import FirebaseFirestore
 
 class UserViewModel: ObservableObject {
-    @Published var userInfo: [String: (String, String?)] = [:] // userID -> (username, profilePhoto)
+    @Published var userInfo: [String: (String,String, String?)] = [:] // userID -> (username, profilePhoto)
 
     private let db = Firestore.firestore()
 
@@ -21,10 +21,11 @@ class UserViewModel: ObservableObject {
             if userInfo[userId] == nil { // 🔥 Eğer daha önce yüklenmemişse çek
                 db.collection("users").document(userId).getDocument { document, error in
                     if let document = document, document.exists {
-                        let username = document.get("username") as? String ?? "Bilinmeyen Kullanıcı"
+                        let username = document.get("name") as? String ?? "Ad"
+                        let lastname = document.get("lastName") as? String ?? "Soyad"
                         let profilePhoto = document.get("profilePhoto") as? String
                         DispatchQueue.main.async {
-                            self.userInfo[userId] = (username, profilePhoto)
+                            self.userInfo[userId] = (username,lastname, profilePhoto)
                         }
                     }
                 }
