@@ -1,10 +1,3 @@
-//
-//  ChatViewModel.swift
-//  Bazar
-//
-//  Created by Emre Şahin on 15.02.2025.
-//
-
 import SwiftUI
 import Firebase
 import FirebaseFirestore
@@ -12,9 +5,11 @@ import FirebaseFirestore
 class ChatViewModel: ObservableObject {
     @Published var messages: [MessageModel] = []
     @Published var chats: [ChatModel] = []
+    @Published var userInfo: [String: (String, String?)] = [:] // userID -> (username, profilePhoto)
     
     private let db = Firestore.firestore()
     
+    // MARK: - Mesaj Gönderme
     func sendMessage(chatId: String, senderId: String, receiverId: String, text: String) {
         let newMessage = MessageModel(
             chatId: chatId,
@@ -28,7 +23,7 @@ class ChatViewModel: ObservableObject {
             // Yeni mesajı Firestore'a ekle
             let _ = try db.collection("messages").document(chatId).collection("messages").addDocument(from: newMessage)
             
-            // **Sohbetin son mesajını ve zamanını güncelle**
+            // Sohbetin son mesajını ve zamanını güncelle
             db.collection("messages").document(chatId).setData([
                 "userIds": [senderId, receiverId], // Kullanıcı UID'leri
                 "lastMessage": text,
@@ -40,6 +35,7 @@ class ChatViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Mesajları Çekme
     func fetchMessages(chatId: String) {
         db.collection("messages").document(chatId).collection("messages")
             .order(by: "timestamp", descending: false)
@@ -53,6 +49,7 @@ class ChatViewModel: ObservableObject {
             }
     }
     
+    // MARK: - Sohbetleri Çekme
     func fetchChats(userId: String) {
         db.collection("messages")
             .whereField("userIds", arrayContains: userId)
@@ -67,9 +64,43 @@ class ChatViewModel: ObservableObject {
                 }
                 self.chats = documents.compactMap { try? $0.data(as: ChatModel.self) }
                 print("Firestore'dan çekilen sohbetler: \(self.chats)")
+                
+                // Kullanıcı bilgilerini çek
+                self.fetchUserDetails(for: self.chats, currentUserId: userId)
             }
     }
     
+    // MARK: - Kullanıcı Bilgilerini Çekme
+    private func fetchUserDetails(for chats: [ChatModel], currentUserId: String) {
+        let receiverIds = Set(chats.map { $0.otherUserId(currentUserId: currentUserId) })
+        
+        db.collection("users")
+            .whereField("uid", in: Array(receiverIds))
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Kullanıcı bilgileri çekilirken hata oluştu: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    print("Kullanıcı bulunamadı.")
+                    return
+                }
+                
+                for document in documents {
+                    let userId = document.get("uid") as? String ?? ""
+                    let username = document.get("name") as? String ?? "Ad"
+                    let lastName = document.get("lastName") as? String ?? "Soyad"
+                    let profilePhoto = document.get("profilePhoto") as? String
+                    
+                    DispatchQueue.main.async {
+                        self.userInfo[userId] = (username, profilePhoto)
+                    }
+                }
+            }
+    }
+    
+    // MARK: - Sohbet Oluşturma
     func createChatIfNeeded(user1Id: String, user2Id: String, completion: @escaping (String) -> Void) {
         let chatId = [user1Id, user2Id].sorted().joined(separator: "_")
         

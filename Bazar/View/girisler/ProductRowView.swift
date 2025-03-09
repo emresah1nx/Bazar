@@ -1,17 +1,12 @@
-//
-//  ProductRowView.swift
-//  Bazar
-//
-//  Created by Emre Şahin on 30.01.2025.
-//
-
 import SwiftUI
 
 struct ProductRowView: View {
     @Binding var product: Product // ✅ Güncellenebilir hale getirildi
+    var onDelete: () -> Void // 🗑️ Silme işlemi için closure
 
     var body: some View {
         HStack {
+            // 🖼️ Ürün Resmi
             if let firstImageUrl = product.imageUrls.first, let url = URL(string: firstImageUrl) {
                 AsyncImage(url: url) { image in
                     image
@@ -31,6 +26,7 @@ struct ProductRowView: View {
                     .foregroundColor(.gray)
             }
 
+            // 📝 Ürün Bilgileri
             VStack(alignment: .leading) {
                 Text(product.title)
                     .font(.headline)
@@ -49,6 +45,17 @@ struct ProductRowView: View {
             .padding(.leading, 10)
 
             Spacer()
+
+            // 🗑️ Çöp Kutusu Butonu
+            Button(action: {
+                onDelete() // Silme işlemi için closure tetikleniyor
+            }) {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+                    .padding(8)
+                    .background(Color.white.opacity(0.2))
+                    .clipShape(Circle())
+            }
         }
         .padding()
         .background(Color.white.opacity(0.2))

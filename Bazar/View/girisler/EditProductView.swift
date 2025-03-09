@@ -52,7 +52,7 @@ struct EditProductView: View {
                         .padding()
                         .background(Color.white.opacity(0.2))
                         .cornerRadius(10)
-                        .foregroundColor(.white)
+                        .accentColor(.black)
                     
                     // 📝 Açıklama
                     TextEditor(text: $description)
@@ -61,8 +61,8 @@ struct EditProductView: View {
                         .padding()
                         .background(Color.white.opacity(0.2))
                         .cornerRadius(10)
-                        .foregroundColor(.white)
                         .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.3), lineWidth: 1))
+                        .accentColor(.black)
                     
                     // 💰 Fiyat
                     TextField("Fiyat", text: $price)
@@ -72,7 +72,7 @@ struct EditProductView: View {
                         .padding()
                         .background(Color.white.opacity(0.2))
                         .cornerRadius(10)
-                        .foregroundColor(.white)
+                        .accentColor(.black)
                     
                     // 📸 Mevcut Resimler
                     Text("Mevcut Resimler")
